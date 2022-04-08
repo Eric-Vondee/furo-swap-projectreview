@@ -2,19 +2,19 @@
 
 ## Contract Furostream inherits interface Furostream, ERC712(NFT), Boring ownable and Boring batchable. 
 
-1. interface Furostream has 8 functions, 3 events and a struct: 
+### Interface Furostream has 8 functions, 3 events and a struct: 
  ![ifurostream](https://user-images.githubusercontent.com/23663250/162505571-f51a13ce-ad27-49c3-a440-d8adaa1c7648.png)
 
-2. ERC721 is a standard for representing ownership of non-fungible tokens, where each token is unique. NFTs can represent ownership over digital or  physical assets.  The contract's NFT name is "Furo Steam" and the symbol "FURO" 
+### ERC721 is a standard for representing ownership of non-fungible tokens, where each token is unique. NFTs can represent ownership over digital or  physical assets.  The contract's NFT name is "Furo Steam" and the symbol "FURO" 
     `ERC721("Furo Stream", "FURO")`
 
-3. Contract BoringOwnable inherits state variables `owner/pendingOwner address` from contract BoringOwnableData.
+### Contract BoringOwnable inherits state variables `owner/pendingOwner address` from contract BoringOwnableData.
    - `event OwnershipTransferred()`: emits an event OwnershipTransferred of previousOwner and newOwner.
    - `function transferOwnership()`: transfers ownership to address newOwner, if direc 
    - `function claimOwnership()`: transfers ownership from owner to pendingOwner, it also verifies if msg.sender(user interacting with the contract) is    pendingOwner before the transfer of ownership.
    - `modifier onlyOwner()`: modifier which verifies if msg.sender(user interacting with the contract) is the owner.
 
-4. Contract BoringBatchable inherits BaseBoringBatchable with functions:
+### Contract BoringBatchable inherits BaseBoringBatchable with functions:
   - `function _getRevertMsg(bytes memory _returnData)`: function to help extract useful message from a failed call
   - `function batch()`: 
   - `function permitToken()`: uses the EIP permit-712-signed approvals for gaseless offchain structured hashing and signing. Takes in arguments(token, from&to address, amount, deadline, v, r, s) where v,r,s is a siganture message from the message signer. 
@@ -34,12 +34,12 @@ The constructor takes in two arguments `interface _bentobox and wrapped ether(wE
 ![constructor](https://user-images.githubusercontent.com/23663250/162510496-e32d14b3-8f00-4542-b155-7edb4013c876.png)
 
 
-1. ## function setBentoBoxApproval()
+## function setBentoBoxApproval()
 overrides its function in interface IFurostream, takes in the arguments depicted in the image below and calls setMasterContractApproval contract and encodes the arguments passed.
 
 ![senBentoBox](https://user-images.githubusercontent.com/23663250/162517315-a0da151e-fe9b-44d5-bbb6-d304b3da6877.png)
 
-2. ## function createStream()
+## function createStream()
  -  creates an active stream by passing the required arguments in the picture below and returns a streamId with deposited shares.
  -  it further validates if the starting time is less than the timestamp of the current block in seconds and reverts with the customError " InvalidStartTime()" if it fails.
  - depositedShares is calculated by calling internal function _depositToken() which takes in arguments and are depicted below
@@ -55,7 +55,7 @@ overrides its function in interface IFurostream, takes in the arguments depicted
 - increments the streamId in state, mints the streamd to recipient, initialize the struct and save to mapping streams. 
 - emit LogCreateStream 
 
-3. ## function withdrawFromStream()
+## function withdrawFromStream()
 withdraws from an active stream by rrequiring the streamId, sharesTowithdraw, receiving address, bool value, taskData and returns the receiientbalance and the receiving address.
  
  ![withdrawfromstream](https://user-images.githubusercontent.com/23663250/162510806-1d77adb8-675e-40f2-b5c4-ee5b90d050d7.png)
@@ -71,23 +71,23 @@ withdraws from an active stream by rrequiring the streamId, sharesTowithdraw, re
     - updates the recipient balance in state to guard against reentrancy before issuing a shares transfer to a recipient address.
     - emits the event LogWithdrawFromStream()
 
-4. ## function cancelStream()
+## function cancelStream()
     - This function cancels a current stream and withdraws the shares to recipients address 
     - emits LogCancelStream()
 
-5. ## function getStream()
+## function getStream()
     - Returns the properties of stream given the streamId
    ![getStream](https://user-images.githubusercontent.com/23663250/162510961-0cceee75-f37c-4e0d-9449-1088010eb76d.png)
 
-6. ## function streamBalanceOf()
+## function streamBalanceOf()
   - Takes an argument of streamId, reads the properties of stream from storage and returns the sender's & recipient balance.
 ![streamBalanceOf](https://user-images.githubusercontent.com/23663250/162511002-3d290197-e1b6-4d08-919b-c0e670ca2d7e.png)
 
-7. ## function updateSender()
+## function updateSender()
     * This functions updates the sender's address in storage only if  msg.sender(address interfacing/interacting with the contract) is equal to the one in storage.
 ![updateSender](https://user-images.githubusercontent.com/23663250/162511076-5fc3e8f8-9b39-4d1c-91b3-9f53330f9ae4.png)
 
-8. ## function updateStream()
+## function updateStream()
     ![updateStream](https://user-images.githubusercontent.com/23663250/162511118-52f73de5-016d-41e8-9b71-7e79566f572e.png)
 
     * this function updates the streambalance 
