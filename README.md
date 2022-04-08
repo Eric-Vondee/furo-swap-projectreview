@@ -24,8 +24,8 @@
 
  ## State Variables
   - `wETH address`: wrapped ether contract address
-  - `uint256 streamIds`: streamId
-  - `mapping of keyType(uint256) to struct stream`
+  - `uint256 streamIds`: an unsigned integer to handle unique stream Identification 
+  - `mapping of keyType(uint256) to struct stream`: mapping(uint256 => Stream) public streams
   - `Custom errors`:  it's a convenient, gas-efficient and clean way to explain to users why an operation failed through.
 
 ## constructor
@@ -35,14 +35,14 @@ The constructor takes in two arguments `interface _bentobox and wrapped ether(wE
 
 
 ## function setBentoBoxApproval()
-overrides its function in interface IFurostream, takes in the arguments depicted in the image below and calls setMasterContractApproval contract and encodes the arguments passed.
+function setBentoBoxApproval overrides its inheriting function in `interface IFurostream`, setMasterContractApproval contract and encodes the arguments passed.
 
 ![senBentoBox](https://user-images.githubusercontent.com/23663250/162517315-a0da151e-fe9b-44d5-bbb6-d304b3da6877.png)
 
 ## function createStream()
- -  creates an active stream by passing the required arguments in the picture below and returns a streamId with deposited shares.
- -  it further validates if the starting time is less than the timestamp of the current block in seconds and reverts with the customError " InvalidStartTime()" if it fails.
- - depositedShares is calculated by calling internal function _depositToken() which takes in arguments and are depicted below
+ -  Creates an active stream by passing the required arguments in the picture below and returns a streamId & deposited shares.
+ -  It further validates if the starting time is less than the timestamp of the current block in seconds and reverts with the customError " InvalidStartTime()" if it fails.
+ - DepositedShares is calculated by calling internal function _depositToken() with arguments indicated in the image below:
   
  ![_depositToken](https://user-images.githubusercontent.com/23663250/162510693-a32be784-3061-4d7b-bfd6-da83663e271b.png)
     
@@ -51,18 +51,21 @@ overrides its function in interface IFurostream, takes in the arguments depicted
     - `address to`: contract's address.
     - `amount`: token amount to be deposited 
     - `bool fromBentoBox`: boolean value
-- _depositToken() first verifies the if the condition that checks token address and balance of the contract is greater than the amount, if this conditions holds it continues the process of making a low level call `bentoBox.deposit` and if it fails run the else condition.
-- increments the streamId in state, mints the streamd to recipient, initialize the struct and save to mapping streams. 
-- emit LogCreateStream 
+- _depositToken() is an internal function that firstly verifies if the `token address and balance of the contract` are true.
+    - If true, it continues the process of making a low level call `bentoBox.deposit` to deposit value in ether and corresponding actions.
+    - If false, makes a low level call either to `bentoBox.share` or `bentoBox.deposit`
+- It further increments the streamId in storage, mints the streamd to recipient, initializes the `struct stream` and write to `mapping streams`. 
+- Lastly emits `emit LogCreateStream` 
 
 ## function withdrawFromStream()
-withdraws from an active stream by rrequiring the streamId, sharesTowithdraw, receiving address, bool value, taskData and returns the receiientbalance and the receiving address.
+withdraws from an active stream by requiring the streamId, sharesTowithdraw, receiving address, bool value, taskData and returns the recipientbalance and the receiving address.
  
  ![withdrawfromstream](https://user-images.githubusercontent.com/23663250/162510806-1d77adb8-675e-40f2-b5c4-ee5b90d050d7.png)
  
-    - Given the right streamId, it initially verifies the condition that msg.sender(address interfacing with the contract) is equal to the address stored in our mapping and our recipient 
+    - Given the right streamId, it initially verifies the condition that `msg.sender(address interfacing with the contract)` is equal to the storage address of our recipient. 
     - Reads the properties of the stream from state, checks if the recipients balance is sufficent to facilitate the withdrawal and if otherwsie throws our error InValidWithdrawTooMuch();
         - ## inserts _transferToken()
+
         - `token`: address of the streamed token
         - `address from`: contract address 
         - `address to`: the withdraw address passed as an argument or recipients address which is gotten from the streamId.
@@ -84,13 +87,13 @@ withdraws from an active stream by rrequiring the streamId, sharesTowithdraw, re
 ![streamBalanceOf](https://user-images.githubusercontent.com/23663250/162511002-3d290197-e1b6-4d08-919b-c0e670ca2d7e.png)
 
 ## function updateSender()
-    * This functions updates the sender's address in storage only if  msg.sender(address interfacing/interacting with the contract) is equal to the one in storage.
+    - This function updates the sender's address in storage only if  `msg.sender(address interfacing/interacting with the contract)` is equal to address in storage.
 ![updateSender](https://user-images.githubusercontent.com/23663250/162511076-5fc3e8f8-9b39-4d1c-91b3-9f53330f9ae4.png)
 
 ## function updateStream()
     ![updateStream](https://user-images.githubusercontent.com/23663250/162511118-52f73de5-016d-41e8-9b71-7e79566f572e.png)
 
-    * this function updates the streambalance 
+    - this function updates the streambalance 
     - gets the recipients current balance, transfers to the recipient and updates the withdrawnShares value in state (Could cause reentrancy)
     - then calls the _depositToken() function which transfers token from thereceipient before updating state. 
     - then finally updates the deposited shares and endTime
